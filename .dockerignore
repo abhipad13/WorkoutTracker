@@ -1,0 +1,10 @@
+target/
+.git/
+.gitignore
+.mvn/wrapper/maven-wrapper.jar
+README.md
+HELP.md
+GCP_DEPLOYMENT.md
+DATABASE_DESIGN.md
+
+

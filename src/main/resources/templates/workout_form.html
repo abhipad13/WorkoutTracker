@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${workout.workoutId != null ? 'Edit Workout' : 'Create Workout'}">Workout Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .exercise-entry {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .entry-header {
+            font-weight: bold;
+            color: #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">Workout Tracker</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" th:href="@{/exercises}">Exercises</a>
+                <a class="nav-link" th:href="@{/workouts}">Workouts</a>
+                <a class="nav-link" th:href="@{/workouts/report}">Reports</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-3">
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Workout Info Card -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0" th:text="${workout.workoutId != null ? 'Edit Workout' : 'Create New Workout'}">Workout Form</h4>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/workouts/save}" th:object="${workout}" method="post">
+                            <input type="hidden" th:field="*{workoutId}">
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="workoutDate" class="form-label">Workout Date <span class="text-danger">*</span></label>
+                                    <input type="date" 
+                                           class="form-control" 
+                                           id="workoutDate" 
+                                           name="workoutDate"
+                                           th:value="${workout.workoutDate != null ? #temporals.format(workout.workoutDate, 'yyyy-MM-dd') : ''}"
+                                           required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="notes" class="form-label">Notes</label>
+                                <textarea class="form-control" id="notes" th:field="*{notes}" rows="2" placeholder="Optional workout notes..."></textarea>
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <span th:if="${workout.workoutId == null}">Create Workout</span>
+                                    <span th:if="${workout.workoutId != null}">Update Workout</span>
+                                </button>
+                                <a th:href="@{/workouts}" class="btn btn-outline-secondary">Back to List</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Add Exercise Card -->
+                <div class="card" th:if="${workout.workoutId != null}">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Add Exercise</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/workouts/{id}/addEntry(id=${workout.workoutId})}" method="post">
+                            <div class="row g-3">
+                                <div class="col-md-5">
+                                    <label for="exerciseId" class="form-label">Exercise</label>
+                                    <select class="form-select" id="exerciseId" name="exerciseId" required>
+                                        <option value="">Select Exercise...</option>
+                                        <option th:each="exercise : ${exercises}" 
+                                                th:value="${exercise.exerciseId}" 
+                                                th:text="${exercise.name + ' (' + exercise.muscleGroup + ')'}"></option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="sets" class="form-label">Sets</label>
+                                    <input type="number" class="form-control" id="sets" name="sets" min="1" value="3" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="reps" class="form-label">Reps</label>
+                                    <input type="number" class="form-control" id="reps" name="reps" min="1" value="10" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="weight" class="form-label">Weight (kg)</label>
+                                    <input type="number" step="0.1" class="form-control" id="weight" name="weight" min="0" value="0" required>
+                                </div>
+                                <div class="col-md-1">
+                                    <label class="form-label">&nbsp;</label>
+                                    <button type="submit" class="btn btn-success w-100" title="Add Exercise">✓</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Info for new workouts -->
+                <div class="alert alert-info" th:if="${workout.workoutId == null}">
+                    <strong>Tip:</strong> Fill in the workout date and click "Create Workout" first. Then you'll be able to add exercises.
+                </div>
+            </div>
+
+            <!-- Workout Entries Sidebar -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">Workout Exercises</h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${workout.workoutId == null}" class="text-center text-muted py-3">
+                            <p>Create workout first to add exercises</p>
+                        </div>
+                        <div th:if="${workout.workoutId != null and #lists.isEmpty(workout.entries)}" class="text-center text-muted py-3">
+                            <p>No exercises added yet.</p>
+                            <p class="small">Add exercises using the form on the left.</p>
+                        </div>
+                        <div th:if="${workout.workoutId != null and !#lists.isEmpty(workout.entries)}">
+                            <div class="exercise-entry" th:each="entry : ${workout.entries}">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <div class="entry-header" th:text="${entry.exercise.name}"></div>
+                                        <small class="text-muted" th:text="${entry.exercise.muscleGroup}"></small>
+                                    </div>
+                                    <a th:href="@{/workouts/{workoutId}/deleteEntry/{entryId}(workoutId=${workout.workoutId}, entryId=${entry.entryId})}" 
+                                       class="btn btn-sm btn-danger" 
+                                       onclick="return confirm('Delete this exercise from workout?')"
+                                       title="Remove exercise">
+                                        Delete
+                                    </a>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-4 text-center">
+                                        <div class="small text-muted">Sets</div>
+                                        <strong th:text="${entry.sets}"></strong>
+                                    </div>
+                                    <div class="col-4 text-center">
+                                        <div class="small text-muted">Reps</div>
+                                        <strong th:text="${entry.reps}"></strong>
+                                    </div>
+                                    <div class="col-4 text-center">
+                                        <div class="small text-muted">Weight</div>
+                                        <strong th:text="${entry.weight + ' kg'}"></strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-3 border-top">
+                                <strong>Total Exercises: <span th:text="${#lists.size(workout.entries)}"></span></strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

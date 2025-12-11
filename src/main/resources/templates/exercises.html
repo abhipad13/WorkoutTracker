@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercise Library</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">Workout Tracker</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link active" th:href="@{/exercises}">Exercises</a>
+                <a class="nav-link" th:href="@{/workouts}">Workouts</a>
+                <a class="nav-link" th:href="@{/workouts/report}">Reports</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-3">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Exercise Library</h1>
+            <div>
+                <a th:href="@{/exercises/new}" class="btn btn-primary">Add New Exercise</a>
+            </div>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div th:if="${#lists.isEmpty(exercises)}" class="text-center py-5 text-muted">
+                    <h5>No exercises yet</h5>
+                    <p>Add exercises to your library to use them in workouts!</p>
+                    <a th:href="@{/exercises/new}" class="btn btn-primary mt-2">Add Exercise</a>
+                </div>
+                
+                <div th:if="${!#lists.isEmpty(exercises)}">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Exercise Name</th>
+                                <th>Muscle Group</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="exercise : ${exercises}">
+                                <td><strong th:text="${exercise.name}"></strong></td>
+                                <td>
+                                    <span class="badge bg-secondary" th:text="${exercise.muscleGroup}"></span>
+                                </td>
+                                <td>
+                                    <a th:href="@{/exercises/edit/{id}(id=${exercise.exerciseId})}" class="btn btn-sm btn-warning me-1">Edit</a>
+                                    <a th:href="@{/exercises/delete/{id}(id=${exercise.exerciseId})}" 
+                                       class="btn btn-sm btn-danger" 
+                                       onclick="return confirm('Are you sure you want to delete this exercise?')">Delete</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
